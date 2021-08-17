@@ -19,34 +19,36 @@ struct Answers {
 
 class GameViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
    
-    
     @IBOutlet var label:UILabel!
     @IBOutlet var tableView:UITableView!
     var gameModels = [Question]()
+    
     var currentQuestion:Question?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        setUpQuestion()
         tableView.delegate = self
         tableView.dataSource = self
+        setUpQuestion()
+        configureUI(question: gameModels.first!)
        
     }
-    private func configureUI(question:Question){
+    private func configureUI(question: Question){
         label.text = question.text
         currentQuestion = question
-        tableView.reloadData()
     }
     
     private func checkAnswer(answer: Answers, question:Question) -> Bool{
-        return question.answers.contains(where: {$0.text == question.text})
+        return question.answers.contains(where: {$0.text == answer.text}) && answer.correct
     }
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        configureUI(question: gameModels.first!)
+         
+         
     }
     private func setUpQuestion (){
         gameModels.append(Question(text: "What is 2 + 2", answers:
-                                    [Answers(text: "1", correct: true),
+                                    [Answers(text: "1", correct: false),
                                      Answers(text: "3", correct: false),
                                      Answers(text: "4", correct: true),
                                      Answers(text: "2", correct: false)
@@ -86,23 +88,30 @@ class GameViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
         
         if checkAnswer(answer: answer, question: question){
             //correct
-            if let index = gameModels.firstIndex(where: {
-                $0.text == question.text}){
-                if index < (gameModels.count - 1 ){
-                     //next question
-                    let nextQuestion = gameModels[index+1]
-                     
-                    print(nextQuestion)
+            if let index = gameModels.firstIndex(where: {$0.text == question.text}){
+                if index < (gameModels.count - 1){
+                    //next question
+                    let nextQuestion = gameModels[index + 1]
+                    currentQuestion = nil
+                    configureUI(question: nextQuestion)
+                    self.tableView.reloadData()
+                    
                 }
-               
+                else {
+                    //end of game
+                    let alert = UIAlertController(title: "Done", message: "You Win", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
+                    present(alert,animated: true)
+                }
             }
-           
+            
         }
         else {
             //wrong
-            let alert = UIAlertController(title: "Wrong", message: "Try again", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Wrong", message: "Try Again!", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
             present(alert,animated: true)
         }
+        
     }
 }
